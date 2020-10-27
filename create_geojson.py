@@ -2,13 +2,14 @@ import os
 import argparse
 import time
 import matplotlib.pyplot as plt
+import matplotlib
 import pygrib
 import numpy as np
 from subprocess import Popen
 import subprocess
 from datetime import datetime, timedelta
 from plotconfigs import *
-from plot import *
+#from plot import *
 from mapinfo import *
 import tools
 import geojsoncontour
@@ -152,118 +153,6 @@ for t in range(0, n_times):
     time_str = str(int(times[t]))
 
 
-    '''
-    data = np.array(winds['wspd10m'])
-    thresholds = [20, 25, 30, 35]
-    for thresh in thresholds:
-        sums = 0
-        for pert in range(len(perts)):
-            sums = np.where(data[pert,t]>=thresh, sums+1, sums)
-        probs = (sums / float(len(perts))) * 100.
-        save_name = "%s/wind_ge_%s.f%s.geojson" % (JSON_DIR, thresh, time_str)
-        contourf = ax.contourf(lon, lat, probs, prob_levs)
-        geojsoncontour.contourf_to_geojson(contourf=contourf, ndigits=2,
-                                           geojson_filepath=save_name)
-
-        df = pd.DataFrame(columns=['problev', 'color'])
-        with open(save_name) as f: geojson = json.load(f)
-        knt = 0
-        for feature in geojson['features']:
-            geojson['features'][knt]['properties'] = {'problev': float(prob_levs[knt])}
-            tmp = feature['properties']['problev']
-            df.loc[knt] = [tmp, float(prob_levs[knt])]
-            knt += 1
-        df.to_csv(save_name + '.csv')
-        with open(save_name, 'w') as f: json.dump(geojson, f)
-
-    data = np.array(winds['wgust10m'])
-    thresholds = [10, 30, 35, 39, 50]
-    for thresh in thresholds:
-        sums = 0
-        for pert in range(len(perts)):
-            sums = np.where(data[pert,t]>=thresh, sums+1, sums)
-        probs = (sums / float(len(perts))) * 100.
-        save_name = "%s/windgust_ge_%s.f%s.geojson" % (JSON_DIR, thresh, time_str)
-        contourf = ax.contourf(lon, lat, probs, prob_levs)
-        geojsoncontour.contourf_to_geojson(contourf=contourf, ndigits=2,
-                                           geojson_filepath=save_name)
-
-        df = pd.DataFrame(columns=['problev', 'color'])
-        with open(save_name) as f: geojson = json.load(f)
-        knt = 0
-        for feature in geojson['features']:
-            geojson['features'][knt]['properties'] = {'problev': float(prob_levs[knt])}
-            tmp = feature['properties']['problev']
-            df.loc[knt] = [tmp, float(prob_levs[knt])]
-            knt += 1
-        df.to_csv(save_name + '.csv')
-        with open(save_name, 'w') as f: json.dump(geojson, f)
-
-
-    data = np.array(snod['total'])
-    lpmm = tools.calc_LPMM(data[:,t], delta=5)
-    plot_info = 'Snow Depth (in) localized (r=125 km) probability-matched mean'
-    save_name = "%s/snod_total_lpmm.f%s.png" % (PLOT_DIR, time_str)
-    p.plot_lpmm(lpmm, run_date, plot_info, time_str, save_name, plot_cols=snow_cols,
-                 plot_levs=snow_levs)
-
-    data = np.array(accum['3'])
-    lpmm = tools.calc_LPMM(data[:,t])
-    plot_info = '3-hour QPF (in) localized (r=125 km) probability-matched mean'
-    save_name = "%s/qpf_03h_lpmm.f%s.png" % (PLOT_DIR, time_str)
-    p.plot_lpmm(lpmm, run_date, plot_info, time_str, save_name)
-
-
-    if t >= 1:
-        data = np.array(accum['3'])
-        lpmm = tools.calc_LPMM(data[:,t])
-    else:
-        lpmm = np.zeros((num_y, num_x))
-    save_name = "%s/qpf_03h_lpmm.f%s" % (JSON_DIR, time_str)
-    contourf = ax.contourf(lon, lat, lpmm, qpf_levs, colors=qpf_cols)
-    tmp = geojsoncontour.contourf_to_geojson(contourf=contourf, ndigits=2)
-    geojson = json.loads(tmp)
-    #for feature in range(len(geojson['features'])):
-    #    geojson['features'][feature]['properties'] = {'member': 0, 'pert': 'c00'}
-    with open(save_name, 'w') as f: json.dump(geojson, f)
-
-
-    if t >= 2:
-        data = np.array(accum['12'])
-        lpmm = tools.calc_LPMM(data[:,t])
-    else:
-        lpmm = np.zeros((num_y, num_x))
-    plot_info = '12-hour QPF (in) localized (r=125 km) probability-matched mean'
-    save_name = "%s/qpf_12h_lpmm.f%s.geojson" % (JSON_DIR, time_str)
-    contourf = ax.contourf(lon, lat, lpmm, qpf_levs)
-    geojsoncontour.contourf_to_geojson(contourf=contourf, ndigits=2,
-                                       geojson_filepath=save_name)
-    df = pd.DataFrame(columns=['problev', 'color'])
-    with open(save_name) as f: geojson = json.load(f)
-    knt = 0
-    for feature in geojson['features']:
-        geojson['features'][knt]['properties'] = {'problev': qpf_levs[knt]}
-        tmp = feature['properties']['problev']
-        df.loc[knt] = [tmp, qpf_levs[knt]]
-        knt += 1
-    df.to_csv(save_name + '.csv')
-    with open(save_name, 'w') as f: json.dump(geojson, f)
-
-
-    #for thresh in [0.01, 0.05, 0.10, 0.25, 0.5, 1., 2.]:
-    for thresh in [0.01, 0.10, 0.25, 0.5, 1.]:
-        save_name = "%s/qpf_06h_sp_%s.f%s" % (JSON_DIR, str(thresh), time_str)
-        for i in range(n_perts):
-            plot_data = accum['6'][i][t]
-            contour = ax.contour(lon, lat, plot_data, [thresh])
-            tmp = geojsoncontour.contour_to_geojson(contour=contour, ndigits=2)
-            geojson = json.loads(tmp)
-            for feature in range(len(geojson['features'])):
-                geojson['features'][feature]['properties'] = {'member': i, 'pert': perts[i]}
-            with open('%s-%s' % (save_name, i), 'w') as f: json.dump(geojson, f)
-    '''
-
-
     # 3-hr precipitation
     if t >= 1:
         data = np.array(accum['3'])
@@ -316,8 +205,13 @@ for t in range(0, n_times):
     save_name = "%s/snod_total_lpmm.f%s" % (JSON_DIR, time_str)
     lpmm = np.where(lpmm >= 0.05, lpmm, np.nan)
     contourf = ax.contourf(lon, lat, lpmm, snow_levs, colors=snow_cols)
-    geojsoncontour.contourf_to_geojson(contourf=contourf, ndigits=2,
-                                             geojson_filepath=save_name)
+    geojsoncontour.contourf_to_geojson(contourf=contourf, ndigits=2, geojson_filepath=save_name)
+
+    data = np.array(snod['total'])
+    contourf = ax.contourf(lon, lat, np.max(data[:,t], axis=0), snow_levs, colors=snow_cols)
+    save_name = "%s/snod_total_max.f%s" % (JSON_DIR, time_str)
+    geojsoncontour.contourf_to_geojson(contourf=contourf, ndigits=2, geojson_filepath=save_name)
+
     #df = geopandas.read_file(save_name)
     #df_out = df.copy()
     #geojson = json.loads(tmp)
@@ -337,32 +231,23 @@ for t in range(0, n_times):
     #with open(save_name, 'w') as f: json.dump(geojson, f)
     #if len(df_out) > 0: df_out.to_file(save_name, driver='GeoJSON')
 
-    '''
-    for thresh in [0.05, 0.10]:
-        files_to_remove = []
-        #save_name = "%s/qpf_03h_sp_%s.f%s" % (JSON_DIR, str(thresh), time_str)
-        #df = []
-        for i in range(n_perts):
-            save_name = "%s/qpf_03h_sp_%s.f%s-%s" % (JSON_DIR, str(thresh), time_str, i)
-            plot_data = accum['3'][i][t]
-            contourf = ax.contourf(lon, lat, plot_data, [thresh,999999])
-            geojsoncontour.contourf_to_geojson(contourf=contourf, ndigits=2, geojson_filepath=save_name)
-            #arg = 'geobuf encode < %s > %s.pbf' % (save_name, save_name)
-            #print(arg)
-            #subprocess.call(arg, shell=True)
-            #df['geometry'] = df.geometry.simplify(tolerance=0.1, preserve_topology=False)
-            #df_out = df.copy()
-            #df_out['geometry'] = df.geometry.simplify(tolerance=0.01, preserve_topology=False)
-            #geojson = json.loads(tmp)
-            #for feature in range(len(geojson['features'])):
-            #    geojson['features'][feature]['properties'] = {'member': i, 'pert': perts[i]}
-            #jsonfile = '%s-%s' % (save_name, i)
-            #files_to_remove.append(save_name)
-            #with open(jsonfile, 'w') as f: json.dump(geojson, f)
-            #df = geopandas.read_file(jsonfile).append(df, ignore_index=True)
-        #if len(pbf) > 0: pbf.to_file(save_name, driver='GeoJSON')
-        #for f in files_to_remove: os.remove(f)
 
+    for thresh in [0.10, 0.25, 0.50]:
+        save_name = "%s/qpf_03h_sp_%s.f%s" % (JSON_DIR, str(thresh), time_str)
+        output = dict(features=[], type='FeatureCollection')
+        for i in range(n_perts):
+            #save_name = "%s/qpf_03h_sp_%s.f%s-%s" % (JSON_DIR, str(thresh), time_str, i)
+            plot_data = accum['3'][i][t]
+            contourf = ax.contourf(lon, lat, plot_data, [thresh, 999999])
+            tmp = geojsoncontour.contourf_to_geojson(contourf=contourf, ndigits=2)
+            geojson = json.loads(tmp)
+            for feature in range(len(geojson['features'])):
+                color = matplotlib.colors.to_hex(list(spag_cols[i][0:3]))
+                geojson['features'][feature]['properties'] = {'values': i, 'title': perts[i], 'fill': color}
+                output['features'].append(geojson['features'][feature])
+        with open(save_name, 'w') as f: json.dump(output, f)
+
+    '''
     for thresh in [0.01, 0.05, 0.10, 0.25, 0.5, 1., 3.]:
         plot_info = 'Total 6-hour precipitation >= %s"' % (thresh)
         save_name = "%s/qpf_06h_sp_%s.f%s.png" % (PLOT_DIR, str(thresh), time_str)

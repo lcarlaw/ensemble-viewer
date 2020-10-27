@@ -17,7 +17,8 @@ lon = lon - 360.
 n_perts = len(perts)
 num_y, num_x = lon.shape
 
-colors = plt.cm.PiYG(np.linspace(0, 1, n_perts))
+spag_cols = plt.cm.PiYG(np.linspace(0, 1, n_perts))
+spag_levs = np.arange(0, len(perts))
 
 styles = ['-', '-', ':', ':', '--', '--', '-', '-', ':', ':', '--', '--', '-', '-', ':']
 styles += ['-', '-', ':', ':', '--', '--', '-', '-', ':', ':', '--', '--', '-', '-', ':']
