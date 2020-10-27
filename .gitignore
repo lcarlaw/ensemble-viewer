@@ -4,3 +4,7 @@ __pycache__/
 __target__/
 deprecated/
 .DS_Store
+PLOT.log
+plot.py
+plotter.py
+uploader.py
