@@ -1,0 +1,6 @@
+shapefiles/
+webpage/
+__pycache__/
+__target__/
+deprecated/
+.DS_Store
