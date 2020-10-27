@@ -4,7 +4,6 @@ import dash_html_components as html
 import dash_leaflet as dl
 import dash_leaflet.express as dlx
 import json
-import geopandas as gpd
 from plotconfigs import *
 from dash.dependencies import Output, Input
 

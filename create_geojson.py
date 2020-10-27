@@ -9,16 +9,12 @@ from subprocess import Popen
 import subprocess
 from datetime import datetime, timedelta
 from plotconfigs import *
-#from plot import *
 from mapinfo import *
 import tools
 import geojsoncontour
 import json
-import geopandas
 import pandas as pd
-import shapely
-import io
-import geobuf
+
 
 def timestamp(str1, str2):
     """Print out some simple date and time information for log files
